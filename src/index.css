@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Quicksand', sans-serif;
+  @apply text-gray-800 antialiased;
+}
+
+.container-custom {
+  @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+.btn-primary {
+  @apply bg-primary-blue text-white px-6 py-3 rounded-full hover:bg-blue-700 transition-colors duration-300 font-bold shadow-lg;
+}
+
+.btn-secondary {
+  @apply bg-primary-pink text-white px-6 py-3 rounded-full hover:bg-pink-500 transition-colors duration-300 font-bold shadow-lg;
+}
