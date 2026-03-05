@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, type Variants } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
@@ -27,6 +27,15 @@ const Navbar = () => {
     loadLogo();
   }, []);
 
+  // Bloquear scroll cuando el menú móvil está abierto
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+  }, [isOpen]);
+
   const navLinks = [
     { name: 'Inicio', path: '/' },
     { name: 'Sobre Nosotros', path: '/nosotros' },
@@ -38,8 +47,8 @@ const Navbar = () => {
 
   const isActive = (path: string) => location.pathname === path;
 
-  // Variantes de animación
-  const menuItemVariants = {
+  // Variantes de animación corregidas con tipado explícito
+  const menuItemVariants: Variants = {
     closed: { opacity: 0, x: -20 },
     open: (i: number) => ({
       opacity: 1,
@@ -48,29 +57,34 @@ const Navbar = () => {
     })
   };
 
+  const bgVariants: Variants = {
+    closed: { opacity: 0 },
+    open: { opacity: 1, transition: { duration: 0.3 } }
+  };
+
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-500 ease-in-out ${
-        scrolled 
-          ? 'bg-white/80 backdrop-blur-md shadow-md py-3' 
+        scrolled
+          ? 'bg-white/70 backdrop-blur-lg shadow-sm py-3 border-b border-white/20'
           : 'bg-transparent py-5'
       }`}
     >
-      <div className="container-custom flex justify-between items-center">
+      <div className="container-custom flex justify-between items-center relative z-50">
         {/* Logo con animación sutil al scroll */}
         <Link to="/" className="flex items-center gap-2 relative z-50 group" onClick={() => setIsOpen(false)}>
-          <motion.img 
-            src={logoUrl || logoDefault} 
-            alt="Fundación Azulanza" 
-            className={`w-auto object-contain transition-all duration-500 ${scrolled ? 'h-12' : 'h-16 md:h-20'}`}
+          <motion.img
+            src={logoUrl || logoDefault}
+            alt="Fundación Azulanza"
+            className={`w-auto object-contain transition-all duration-500 ${scrolled ? 'h-10' : 'h-14 md:h-16'}`}
             whileHover={{ scale: 1.05 }}
             transition={{ type: "spring", stiffness: 400, damping: 10 }}
           />
         </Link>
 
-        {/* Desktop Menu - Estilo Isla Flotante */}
+        {/* Desktop Menu - Estilo Isla Flotante Mejorado */}
         <div className="hidden lg:flex items-center justify-center">
-          <div className="flex space-x-1 items-center bg-white/70 backdrop-blur-md px-2 py-1.5 rounded-full border border-white/40 shadow-sm hover:shadow-md transition-shadow duration-300">
+          <div className="flex space-x-1 items-center bg-white/50 backdrop-blur-md px-2 py-1.5 rounded-full border border-white/60 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)] hover:shadow-[0_8px_32px_0_rgba(31,38,135,0.15)] transition-shadow duration-300">
             {navLinks.map((link) => (
               <Link
                 key={link.path}
@@ -82,7 +96,7 @@ const Navbar = () => {
                 {isActive(link.path) && (
                   <motion.span
                     layoutId="nav-pill"
-                    className="absolute inset-0 bg-blue-100 rounded-full -z-10"
+                    className="absolute inset-0 bg-white shadow-sm border border-gray-100 rounded-full -z-10"
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
                   />
                 )}
@@ -109,6 +123,7 @@ const Navbar = () => {
 
         {/* Mobile Menu Button */}
         <button
+          aria-label={isOpen ? "Cerrar menú" : "Abrir menú"}
           className="lg:hidden text-gray-700 focus:outline-none relative z-50 p-2.5 bg-white/80 rounded-full backdrop-blur-sm shadow-sm border border-gray-100 hover:bg-gray-100 transition-colors"
           onClick={() => setIsOpen(!isOpen)}
         >
@@ -138,17 +153,22 @@ const Navbar = () => {
         </button>
       </div>
 
-      {/* Mobile Menu Overlay - Full Screen Glassmorphism */}
+      {/* Mobile Menu Overlay - Full Screen con Fondo Animado */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            animate={{ opacity: 1, backdropFilter: "blur(12px)" }}
-            exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-            transition={{ duration: 0.3 }}
-            className="fixed inset-0 bg-white/90 z-40 lg:hidden flex flex-col items-center justify-center"
+            variants={bgVariants}
+            initial="closed"
+            animate="open"
+            exit="closed"
+            className="fixed inset-0 z-40 lg:hidden flex flex-col items-center justify-center overflow-hidden"
           >
-            <div className="w-full max-w-sm px-6 flex flex-col space-y-6">
+            {/* Fondo decorativo */}
+            <div className="absolute inset-0 bg-white/95 backdrop-blur-xl z-0"></div>
+            <div className="absolute top-[-20%] left-[-20%] w-[80%] h-[80%] bg-blue-200/30 rounded-full blur-3xl animate-blob"></div>
+            <div className="absolute bottom-[-20%] right-[-20%] w-[80%] h-[80%] bg-pink-200/30 rounded-full blur-3xl animate-blob animation-delay-2000"></div>
+
+            <div className="w-full max-w-sm px-6 flex flex-col space-y-6 relative z-10">
               {navLinks.map((link, i) => (
                 <motion.div
                   key={link.path}
@@ -160,10 +180,10 @@ const Navbar = () => {
                 >
                   <Link
                     to={link.path}
-                    className={`text-2xl font-bold block text-center py-2 transition-colors ${
-                      isActive(link.path) 
-                        ? 'text-primary-blue scale-110' 
-                        : 'text-gray-800 hover:text-primary-blue'
+                    className={`text-3xl font-bold block text-center py-2 transition-all ${
+                      isActive(link.path)
+                        ? 'text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-pink-500 scale-105'
+                        : 'text-gray-800 hover:text-gray-500'
                     }`}
                     onClick={() => setIsOpen(false)}
                   >
@@ -171,7 +191,7 @@ const Navbar = () => {
                   </Link>
                 </motion.div>
               ))}
-              
+
               <motion.div
                 variants={menuItemVariants}
                 custom={navLinks.length}
@@ -199,14 +219,14 @@ const Navbar = () => {
 
 // Componente simple para el icono de corazón (para evitar conflictos de importación si no existe en lucide)
 const HeartIcon = ({ className }: { className?: string }) => (
-  <svg 
-    xmlns="http://www.w3.org/2000/svg" 
-    viewBox="0 0 24 24" 
-    fill="none" 
-    stroke="currentColor" 
-    strokeWidth="2" 
-    strokeLinecap="round" 
-    strokeLinejoin="round" 
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
     className={className}
   >
     <path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z" />
