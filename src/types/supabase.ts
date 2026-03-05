@@ -166,6 +166,44 @@ export interface Database {
           active?: boolean
         }
       }
+      news: {
+        Row: {
+          id: number
+          created_at: string
+          title: string
+          slug: string
+          summary: string | null
+          content: string
+          image_url: string | null
+          published_at: string
+          active: boolean
+          author: string
+        }
+        Insert: {
+          id?: number
+          created_at?: string
+          title: string
+          slug: string
+          summary?: string | null
+          content: string
+          image_url?: string | null
+          published_at?: string
+          active?: boolean
+          author?: string
+        }
+        Update: {
+          id?: number
+          created_at?: string
+          title?: string
+          slug?: string
+          summary?: string | null
+          content?: string
+          image_url?: string | null
+          published_at?: string
+          active?: boolean
+          author?: string
+        }
+      }
       volunteers: {
         Row: {
           id: number

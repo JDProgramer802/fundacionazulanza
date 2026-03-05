@@ -13,6 +13,7 @@ import DonationsAdmin from './pages/Admin/DonationsAdmin';
 import GalleryAdmin from './pages/Admin/GalleryAdmin';
 import HeroAdmin from './pages/Admin/HeroAdmin';
 import AdminLogin from './pages/Admin/Login';
+import NewsAdmin from './pages/Admin/NewsAdmin';
 import PagesAdmin from './pages/Admin/PagesAdmin';
 import AdminRegister from './pages/Admin/Register';
 import SettingsAdmin from './pages/Admin/SettingsAdmin';
@@ -23,6 +24,8 @@ import Counseling from './pages/Counseling';
 import Donations from './pages/Donations';
 import Gallery from './pages/Gallery';
 import Home from './pages/Home';
+import News from './pages/News';
+import NewsDetail from './pages/NewsDetail';
 import NotFound from './pages/NotFound';
 import Page from './pages/Page';
 import Volunteers from './pages/Volunteers';
@@ -45,6 +48,8 @@ function App() {
           <Route path="/asesoria" element={<Layout><Counseling /></Layout>} />
           <Route path="/donaciones" element={<Layout><Donations /></Layout>} />
           <Route path="/galeria" element={<Layout><Gallery /></Layout>} />
+          <Route path="/noticias" element={<Layout><News /></Layout>} />
+          <Route path="/noticias/:slug" element={<Layout><NewsDetail /></Layout>} />
 
           {/* Ruta dinámica para páginas creadas desde el CMS */}
           <Route path="/p/:slug" element={<Layout><Page /></Layout>} />
@@ -79,6 +84,14 @@ function App() {
               element={
                 <AdminLayout>
                   <PagesAdmin />
+                </AdminLayout>
+              }
+            />
+            <Route
+              path="/admin/noticias"
+              element={
+                <AdminLayout>
+                  <NewsAdmin />
                 </AdminLayout>
               }
             />

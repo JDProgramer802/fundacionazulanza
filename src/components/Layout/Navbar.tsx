@@ -41,6 +41,7 @@ const Navbar = () => {
     { name: 'Sobre Nosotros', path: '/nosotros' },
     { name: 'Asesoría Psicológica', path: '/asesoria' },
     { name: 'Donaciones', path: '/donaciones' },
+    { name: 'Noticias', path: '/noticias' },
     { name: 'Galería', path: '/galeria' },
     { name: 'Contacto', path: '/contacto' },
   ];

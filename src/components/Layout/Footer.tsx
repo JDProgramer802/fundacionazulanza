@@ -6,14 +6,20 @@ import logoDefault from '../../assets/images/logo-azulanza.png';
 import { supabase } from '../../lib/supabase';
 
 const Footer = () => {
-  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+
   useEffect(() => {
-    const loadLogo = async () => {
-      const { data } = await supabase.from('site_settings').select('value').eq('key', 'logo_url').limit(1);
-      if (data && data.length > 0) setLogoUrl(data[0].value as string);
+    const loadSettings = async () => {
+      const { data } = await supabase.from('site_settings').select('*');
+      if (data) {
+        const map: Record<string, string> = {};
+        data.forEach((s: any) => { map[s.key] = s.value || ''; });
+        setSettings(map);
+      }
     };
-    loadLogo();
+    loadSettings();
   }, []);
+
   return (
     <footer className="bg-gray-900 text-white pt-16 pb-8">
       <div className="container-custom grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
@@ -21,7 +27,7 @@ const Footer = () => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <img
-              src={logoUrl || logoDefault}
+              src={settings['logo_url'] || logoDefault}
               alt="Fundación Azulanza"
               className="h-20 md:h-24 lg:h-28 w-auto object-contain bg-white rounded-lg p-2"
             />
@@ -33,7 +39,7 @@ const Footer = () => {
             <a href="#" className="p-2 bg-gray-800 rounded-full hover:bg-primary-blue transition-colors">
               <Facebook size={20} />
             </a>
-            <a href="https://instagram.com/fundacionazulanza?igshid=MzRlODBiNWFlZA==" target="_blank" rel="noreferrer" className="p-2 bg-gray-800 rounded-full hover:bg-primary-pink transition-colors">
+            <a href={settings['instagram_url'] || "https://instagram.com/fundacionazulanza?igshid=MzRlODBiNWFlZA=="} target="_blank" rel="noreferrer" className="p-2 bg-gray-800 rounded-full hover:bg-primary-pink transition-colors">
               <Instagram size={20} />
             </a>
             <a href="#" className="p-2 bg-gray-800 rounded-full hover:bg-blue-400 transition-colors">
@@ -70,15 +76,15 @@ const Footer = () => {
           <ul className="space-y-4">
             <li className="flex items-start gap-3 text-gray-400">
               <MapPin className="shrink-0 text-primary-blue" size={20} />
-              <span>Cra. 42 #65 - 27 Local 2, Barrio Recreo, Barranquilla, Atlántico, Colombia</span>
+              <span>{settings['address'] || "Cra. 42 #65 - 27 Local 2, Barrio Recreo, Barranquilla, Atlántico, Colombia"}</span>
             </li>
             <li className="flex items-center gap-3 text-gray-400">
               <Phone className="shrink-0 text-primary-blue" size={20} />
-              <span>+57 322 721 2546</span>
+              <span>{settings['phone_whatsapp'] || "+57 322 721 2546"}</span>
             </li>
             <li className="flex items-center gap-3 text-gray-400">
               <Mail className="shrink-0 text-primary-blue" size={20} />
-              <span>contacto@fundacionazulanza.org</span>
+              <span>{settings['email_contact'] || "contacto@fundacionazulanza.org"}</span>
             </li>
           </ul>
         </div>

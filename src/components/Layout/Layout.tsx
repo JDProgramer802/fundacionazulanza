@@ -12,17 +12,19 @@ interface LayoutProps {
 // Incluye Navbar, Footer y botón flotante de WhatsApp.
 const Layout = ({ children }: LayoutProps) => {
   const location = useLocation();
-  const isHome = location.pathname === '/';
+  // Páginas que tienen un Hero Section y no necesitan padding superior global
+  const hasHero = ['/', '/nosotros', '/galeria', '/donaciones', '/asesoria', '/contacto', '/voluntariado'].includes(location.pathname);
 
   return (
     <div className="flex flex-col min-h-screen font-sans relative">
       <Navbar />
       
       {/* Contenido principal.
-          Si es Home, no añadimos padding superior para que el Hero ocupe todo.
-          En otras páginas, añadimos pt-20 o pt-24 para compensar el Navbar fijo. 
+          Si la página tiene Hero, eliminamos el padding superior para que el Hero
+          se posicione detrás del Navbar transparente (efecto inmersivo).
+          Para otras páginas, mantenemos el padding para evitar que el contenido quede oculto.
       */}
-      <main className={`flex-grow ${!isHome ? 'pt-24 md:pt-28' : ''}`}>
+      <main className={`flex-grow ${!hasHero ? 'pt-24 md:pt-28' : ''}`}>
         {children}
       </main>
 

@@ -12,19 +12,34 @@ import type { Database } from '../types/supabase';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-// Note: effect-fade styles might be included in main css or not needed if using modules correctly
-// If specific file is missing, we can try importing from 'swiper/modules/effect-fade/effect-fade.min.css' or similar
-// For now, let's comment it out if it causes build errors, as basic fade often works with base css
-// import 'swiper/css/effect-fade';
 
 type HeroSlide = Database['public']['Tables']['hero_slides']['Row'];
+type NewsItem = Database['public']['Tables']['news']['Row'];
 
 const Home = () => {
   const [heroSlides, setHeroSlides] = useState<HeroSlide[]>([]);
+  const [recentNews, setRecentNews] = useState<NewsItem[]>([]);
 
   useEffect(() => {
     fetchHeroSlides();
+    fetchRecentNews();
   }, []);
+
+  const fetchRecentNews = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('news')
+        .select('*')
+        .eq('active', true)
+        .order('published_at', { ascending: false })
+        .limit(3);
+
+      if (error) throw error;
+      setRecentNews(data || []);
+    } catch (error) {
+      console.error('Error fetching news:', error);
+    }
+  };
 
   const fetchHeroSlides = async () => {
     try {
@@ -196,6 +211,74 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Recent News Section */}
+      {recentNews.length > 0 && (
+        <section className="py-24 bg-gray-50">
+          <div className="container-custom">
+            <div className="flex justify-between items-end mb-12">
+              <div>
+                <span className="text-primary-blue font-bold uppercase tracking-wider text-sm bg-blue-100 px-4 py-2 rounded-full mb-4 inline-block">
+                  Actualidad
+                </span>
+                <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mt-2">Últimas Noticias</h2>
+              </div>
+              <Link to="/noticias" className="hidden md:flex items-center gap-2 text-primary-blue font-bold hover:gap-3 transition-all">
+                Ver todas <ArrowRight size={20} />
+              </Link>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {recentNews.map((item, index) => (
+                <motion.article
+                  key={item.id}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col group"
+                >
+                  <Link to={`/noticias/${item.slug}`} className="block relative h-56 overflow-hidden">
+                    <img
+                      src={item.image_url || 'https://via.placeholder.com/600x400?text=Noticia'}
+                      alt={item.title}
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                  </Link>
+                  <div className="p-6 flex-1 flex flex-col">
+                    <div className="text-xs text-gray-500 mb-3 flex items-center gap-2">
+                      <span className="bg-blue-50 text-blue-600 px-2 py-1 rounded-md font-medium">
+                        {new Date(item.published_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-800 mb-3 line-clamp-2 group-hover:text-primary-blue transition-colors">
+                      <Link to={`/noticias/${item.slug}`}>
+                        {item.title}
+                      </Link>
+                    </h3>
+                    <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-1">
+                      {item.summary || item.content.substring(0, 100) + '...'}
+                    </p>
+                    <Link
+                      to={`/noticias/${item.slug}`}
+                      className="inline-flex items-center gap-1 text-primary-blue font-bold text-sm hover:gap-2 transition-all mt-auto"
+                    >
+                      Leer más <ChevronRight size={16} />
+                    </Link>
+                  </div>
+                </motion.article>
+              ))}
+            </div>
+
+            <div className="mt-8 text-center md:hidden">
+              <Link to="/noticias" className="inline-flex items-center gap-2 text-primary-blue font-bold">
+                Ver todas las noticias <ArrowRight size={20} />
+              </Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Brief About Section */}
       <section className="py-24 bg-gray-50 overflow-hidden">

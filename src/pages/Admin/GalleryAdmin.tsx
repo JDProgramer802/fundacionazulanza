@@ -170,14 +170,14 @@ const GalleryAdmin = () => {
     return matchesFilter && matchesSearch;
   });
 
-  // Datos preparados para exportación
-  const exportData = filteredItems.map(item => ({
-    ID: item.id,
-    Título: item.title,
-    Categoría: item.category,
-    'Fecha Creación': new Date(item.created_at).toLocaleDateString(),
-    URL: item.image_url
-  }));
+  // Datos preparados para exportación (sin mapear a estructura plana primero, pasamos items crudos)
+  const columns = [
+    { header: 'ID', key: 'id' as keyof GalleryItem },
+    { header: 'Título', key: 'title' as keyof GalleryItem },
+    { header: 'Categoría', key: 'category' as keyof GalleryItem },
+    { header: 'Fecha Creación', key: 'created_at' as keyof GalleryItem },
+    { header: 'URL', key: 'image_url' as keyof GalleryItem },
+  ];
 
   if (loading) {
     return (
@@ -197,14 +197,14 @@ const GalleryAdmin = () => {
         </div>
         <div className="flex gap-2">
             <button
-                onClick={() => exportToPDF(exportData, 'galeria_azulanza', 'Reporte de Galería')}
+                onClick={() => exportToPDF(filteredItems, columns, 'Reporte de Galería', 'galeria_azulanza')}
                 className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
                 title="Exportar a PDF"
             >
                 <FileText className="w-4 h-4" /> PDF
             </button>
             <button
-                onClick={() => exportToExcel(exportData, 'galeria_azulanza')}
+                onClick={() => exportToExcel(filteredItems, columns, 'galeria_azulanza')}
                 className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
                 title="Exportar a Excel"
             >
@@ -212,7 +212,7 @@ const GalleryAdmin = () => {
             </button>
             <button
             onClick={() => setIsAdding(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-700 transition-colors"
             >
             <Plus className="w-5 h-5" />
             Nueva Imagen
@@ -229,7 +229,7 @@ const GalleryAdmin = () => {
             placeholder="Buscar por título..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
+            className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
           />
         </div>
         <div className="flex items-center gap-2 overflow-x-auto pb-2 sm:pb-0">
@@ -240,7 +240,7 @@ const GalleryAdmin = () => {
               onClick={() => setFilter(cat)}
               className={`px-3 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
                 filter === cat
-                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                  ? 'bg-blue-50 dark:bg-blue-900/30 text-primary-blue dark:text-blue-400'
                   : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
               }`}
             >
@@ -328,7 +328,7 @@ const GalleryAdmin = () => {
                     onClick={() => setUploadMethod('file')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${
                         uploadMethod === 'file'
-                        ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400'
+                        ? 'bg-white dark:bg-gray-600 shadow-sm text-primary-blue dark:text-blue-400'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                     }`}
                 >
@@ -339,7 +339,7 @@ const GalleryAdmin = () => {
                     onClick={() => setUploadMethod('link')}
                     className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-md text-sm font-medium transition-all ${
                         uploadMethod === 'link'
-                        ? 'bg-white dark:bg-gray-600 shadow-sm text-blue-600 dark:text-blue-400'
+                        ? 'bg-white dark:bg-gray-600 shadow-sm text-primary-blue dark:text-blue-400'
                         : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200'
                     }`}
                 >
@@ -354,7 +354,7 @@ const GalleryAdmin = () => {
                   required
                   value={newItem.title}
                   onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="Ej: Taller de Arte"
                 />
               </div>
@@ -364,7 +364,7 @@ const GalleryAdmin = () => {
                 <select
                   value={newItem.category}
                   onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="Eventos">Eventos</option>
                   <option value="Jornadas">Jornadas</option>
@@ -384,7 +384,7 @@ const GalleryAdmin = () => {
                         setNewItem({ ...newItem, image_url: e.target.value });
                         setPreviewUrl(e.target.value);
                     }}
-                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-primary-blue focus:border-transparent dark:bg-gray-700 dark:text-white"
                     placeholder="https://ejemplo.com/imagen.jpg"
                     />
                 </div>
@@ -392,7 +392,7 @@ const GalleryAdmin = () => {
                 <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Imagen</label>
                     <div
-                        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer"
+                        className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg p-6 text-center hover:border-primary-blue transition-colors cursor-pointer"
                         onClick={() => fileInputRef.current?.click()}
                     >
                         <input
@@ -428,7 +428,7 @@ const GalleryAdmin = () => {
                 <button
                   type="submit"
                   disabled={isUploading}
-                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+                  className="flex-1 px-4 py-2 bg-primary-blue text-white rounded-lg hover:bg-blue-700 font-medium flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                 >
                   {isUploading ? (
                     <>

@@ -9,8 +9,8 @@ export default {
     extend: {
       colors: {
         primary: {
-          blue: 'rgb(3, 86, 203)',
-          pink: 'rgb(238, 132, 181)',
+          blue: '#0356CB',
+          pink: '#EE84B5',
         }
       },
       fontFamily: {

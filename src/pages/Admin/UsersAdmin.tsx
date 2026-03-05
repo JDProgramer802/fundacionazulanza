@@ -100,7 +100,7 @@ const UsersAdmin = () => {
                   <tr key={profile.id} className="hover:bg-gray-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center font-bold text-primary-blue">
+                        <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center font-bold text-primary-blue">
                           {profile.full_name?.charAt(0) || 'A'}
                         </div>
                         <div>
@@ -110,7 +110,7 @@ const UsersAdmin = () => {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="px-3 py-1 bg-blue-100 text-primary-blue text-xs font-bold rounded-full uppercase tracking-wider flex items-center gap-1 w-fit">
+                      <span className="px-3 py-1 bg-blue-50 text-primary-blue text-xs font-bold rounded-full uppercase tracking-wider flex items-center gap-1 w-fit">
                         <Shield size={12} />
                         {profile.role}
                       </span>
@@ -150,7 +150,7 @@ const UsersAdmin = () => {
               </button>
 
               <div className="text-center mb-8">
-                <div className="w-16 h-16 bg-blue-100 text-primary-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                <div className="w-16 h-16 bg-blue-50 text-primary-blue rounded-full flex items-center justify-center mx-auto mb-4">
                   <UserPlus size={32} />
                 </div>
                 <h2 className="text-2xl font-bold text-gray-800">Crear Nuevo Administrador</h2>
