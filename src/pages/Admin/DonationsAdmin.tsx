@@ -8,18 +8,24 @@ import { useExport } from '../../hooks/useExport';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../types/supabase';
 
+// Tipo Donation derivado de la base de datos
 type Donation = Database['public']['Tables']['donations']['Row'];
 
 const DonationsAdmin = () => {
+  // Estado para las donaciones, carga y total recaudado
   const [donations, setDonations] = useState<Donation[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalAmount, setTotalAmount] = useState(0);
+  
+  // Hook de exportación
   const { exportToPDF, exportToExcel } = useExport();
 
+  // Cargar donaciones al montar el componente
   useEffect(() => {
     fetchDonations();
   }, []);
 
+  // Obtener donaciones desde Supabase
   const fetchDonations = async () => {
     try {
       setLoading(true);
@@ -31,6 +37,7 @@ const DonationsAdmin = () => {
       if (error) throw error;
       setDonations(data || []);
 
+      // Calcular total acumulado
       const total = (data || []).reduce((acc, curr) => acc + Number(curr.amount), 0);
       setTotalAmount(total);
     } catch (error: any) {
@@ -40,6 +47,7 @@ const DonationsAdmin = () => {
     }
   };
 
+  // Manejador para exportar a PDF
   const handleExportPDF = () => {
     exportToPDF(
       donations,
@@ -55,6 +63,7 @@ const DonationsAdmin = () => {
     );
   };
 
+  // Manejador para exportar a Excel
   const handleExportExcel = () => {
     exportToExcel(
       donations,
@@ -70,20 +79,21 @@ const DonationsAdmin = () => {
     );
   };
 
+  // Configuración de columnas para la tabla administrativa
   const columns = [
     {
       header: 'Donante',
       accessor: (row: Donation) => (
         <div>
-          <p className="font-bold text-gray-800">{row.donor_name || 'Anónimo'}</p>
-          <p className="text-xs text-gray-500">{row.payment_method || '-'}</p>
+          <p className="font-bold text-gray-800 dark:text-gray-200">{row.donor_name || 'Anónimo'}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{row.payment_method || '-'}</p>
         </div>
       )
     },
     {
       header: 'Monto',
       accessor: (row: Donation) => (
-        <span className="font-bold text-green-600">
+        <span className="font-bold text-green-600 dark:text-green-400">
           ${Number(row.amount).toLocaleString()}
         </span>
       )
@@ -91,7 +101,7 @@ const DonationsAdmin = () => {
     {
       header: 'Fecha',
       accessor: (row: Donation) => (
-        <span className="text-gray-600 text-sm">
+        <span className="text-gray-600 dark:text-gray-300 text-sm">
           {format(new Date(row.created_at), 'dd MMM yyyy, HH:mm', { locale: es })}
         </span>
       )
@@ -99,18 +109,20 @@ const DonationsAdmin = () => {
     {
       header: 'Mensaje',
       accessor: (row: Donation) => (
-        <div className="max-w-xs truncate text-gray-500 italic">
-          {row.message ? `"${row.message}"` : '-'}
-        </div>
+        <p className="text-sm text-gray-600 dark:text-gray-300 italic truncate max-w-xs">
+          "{row.message || 'Sin mensaje'}"
+        </p>
       )
     },
     {
       header: 'Estado',
       accessor: (row: Donation) => (
-        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-          row.status === 'completed' ? 'bg-green-100 text-green-600' : 'bg-yellow-100 text-yellow-600'
+        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
+          row.status === 'Completado' 
+            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
+            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
         }`}>
-          {row.status === 'completed' ? 'Completado' : 'Pendiente'}
+          {row.status}
         </span>
       )
     }
@@ -118,57 +130,52 @@ const DonationsAdmin = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Historial de Donaciones</h1>
-          <p className="text-gray-500">Monitorea los aportes recibidos.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Donaciones</h1>
+          <p className="text-gray-500 dark:text-gray-400">Historial de donaciones recibidas</p>
         </div>
         <div className="flex gap-2">
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
           >
-            <FileText size={18} />
-            PDF
+            <FileText className="w-4 h-4" /> PDF
           </button>
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 border border-green-100 rounded-lg hover:bg-green-100 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
           >
-            <Sheet size={18} />
-            Excel
+            <Sheet className="w-4 h-4" /> Excel
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-green-50 text-green-600 rounded-xl">
-            <DollarSign size={24} />
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Total Recaudado</p>
-            <p className="text-2xl font-bold text-gray-800">${totalAmount.toLocaleString()}</p>
-          </div>
+      {/* Tarjeta de Resumen Total */}
+      <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 flex items-center gap-4">
+        <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full text-green-600 dark:text-green-400">
+          <DollarSign className="w-8 h-8" />
         </div>
-
-        <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex items-center gap-4">
-          <div className="p-3 bg-blue-50 text-blue-600 rounded-xl">
-            <TrendingUp size={24} />
-          </div>
-          <div>
-            <p className="text-gray-500 text-sm font-medium">Donaciones este mes</p>
-            <p className="text-2xl font-bold text-gray-800">{donations.length}</p>
-          </div>
+        <div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Total Recaudado</p>
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+            ${totalAmount.toLocaleString()}
+          </h2>
+        </div>
+        <div className="ml-auto text-green-500 flex items-center gap-1 text-sm font-medium">
+          <TrendingUp className="w-4 h-4" />
+          <span>Histórico</span>
         </div>
       </div>
 
-      <AdminTable
-        title="Transacciones Recientes"
-        data={donations}
-        columns={columns}
-        isLoading={loading}
-      />
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <AdminTable
+          data={donations}
+          columns={columns}
+          loading={loading}
+          emptyMessage="No hay donaciones registradas aún."
+        />
+      </div>
     </div>
   );
 };

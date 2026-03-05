@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '../../lib/supabase';
 
 const DashboardHome = () => {
+  // Estado para contadores del dashboard
   const [stats, setStats] = useState({
     counseling: 0,
     volunteers: 0,
@@ -12,20 +13,25 @@ const DashboardHome = () => {
   });
 
   useEffect(() => {
+    // Cargar estadísticas desde la base de datos
     const fetchStats = async () => {
-      // Simulación de carga o consultas reales
-      // En un caso real haríamos count() a cada tabla
+      // Usamos count: 'exact' y head: true para obtener solo el número de registros sin traer los datos
       const { count: counselingCount } = await supabase.from('counseling_requests').select('*', { count: 'exact', head: true });
       const { count: volunteersCount } = await supabase.from('volunteers').select('*', { count: 'exact', head: true });
       const { count: galleryCount } = await supabase.from('gallery').select('*', { count: 'exact', head: true });
       
-      // Donaciones simuladas si no hay tabla real o datos
-      const donationsCount = 1250; 
+      // Calcular total de donaciones sumando el campo 'amount' de donaciones completadas
+      const { data: donationsData } = await supabase
+        .from('donations')
+        .select('amount')
+        .eq('status', 'Completado');
+        
+      const totalDonations = donationsData?.reduce((sum, item) => sum + Number(item.amount), 0) || 0;
 
       setStats({
         counseling: counselingCount || 0,
         volunteers: volunteersCount || 0,
-        donations: donationsCount,
+        donations: totalDonations,
         gallery: galleryCount || 0
       });
     };
@@ -33,38 +39,39 @@ const DashboardHome = () => {
     fetchStats();
   }, []);
 
+  // Configuración de tarjetas informativas
   const cards = [
     { 
       title: 'Solicitudes de Asesoría', 
       value: stats.counseling, 
       icon: Users, 
       color: 'bg-blue-500', 
-      lightColor: 'bg-blue-50',
-      textColor: 'text-blue-600'
+      lightColor: 'bg-blue-50 dark:bg-blue-900/20',
+      textColor: 'text-blue-600 dark:text-blue-400'
     },
     { 
       title: 'Voluntarios Registrados', 
       value: stats.volunteers, 
       icon: Heart, 
       color: 'bg-pink-500', 
-      lightColor: 'bg-pink-50',
-      textColor: 'text-pink-600'
+      lightColor: 'bg-pink-50 dark:bg-pink-900/20',
+      textColor: 'text-pink-600 dark:text-pink-400'
     },
     { 
       title: 'Donaciones Recibidas', 
-      value: `$${stats.donations}`, 
+      value: `$${stats.donations.toLocaleString()}`, 
       icon: DollarSign, 
       color: 'bg-green-500', 
-      lightColor: 'bg-green-50',
-      textColor: 'text-green-600'
+      lightColor: 'bg-green-50 dark:bg-green-900/20',
+      textColor: 'text-green-600 dark:text-green-400'
     },
     { 
       title: 'Imágenes en Galería', 
       value: stats.gallery, 
       icon: Activity, 
       color: 'bg-purple-500', 
-      lightColor: 'bg-purple-50',
-      textColor: 'text-purple-600'
+      lightColor: 'bg-purple-50 dark:bg-purple-900/20',
+      textColor: 'text-purple-600 dark:text-purple-400'
     },
   ];
 
@@ -72,10 +79,10 @@ const DashboardHome = () => {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-800">Panel de Control</h1>
-          <p className="text-gray-500">Resumen general de la actividad de la fundación.</p>
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Panel de Control</h1>
+          <p className="text-gray-500 dark:text-gray-400">Resumen general de la actividad de la fundación.</p>
         </div>
-        <div className="text-sm text-gray-500 bg-white px-4 py-2 rounded-lg border border-gray-100 shadow-sm">
+        <div className="text-sm text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-4 py-2 rounded-lg border border-gray-100 dark:border-gray-700 shadow-sm">
           Última actualización: {new Date().toLocaleDateString()}
         </div>
       </div>
@@ -87,58 +94,23 @@ const DashboardHome = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow"
+            className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow"
           >
             <div className="flex justify-between items-start mb-4">
               <div className={`p-3 rounded-xl ${card.lightColor} ${card.textColor}`}>
                 <card.icon size={24} />
               </div>
               <span className={`text-xs font-bold px-2 py-1 rounded-full ${card.lightColor} ${card.textColor}`}>
-                +12% mes
+                Activo
               </span>
             </div>
-            <h3 className="text-gray-500 font-medium text-sm mb-1">{card.title}</h3>
-            <p className="text-3xl font-bold text-gray-800">{card.value}</p>
+            <h3 className="text-gray-500 dark:text-gray-400 font-medium text-sm mb-1">{card.title}</h3>
+            <p className="text-2xl font-bold text-gray-800 dark:text-white">{card.value}</p>
           </motion.div>
         ))}
       </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Actividad Reciente</h2>
-          <div className="space-y-4">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="flex items-center gap-4 p-3 hover:bg-gray-50 rounded-xl transition-colors cursor-pointer">
-                <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-                  N
-                </div>
-                <div>
-                  <p className="text-sm font-bold text-gray-800">Nueva solicitud de asesoría</p>
-                  <p className="text-xs text-gray-500">Hace {i} horas</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-          <h2 className="text-lg font-bold text-gray-800 mb-4">Accesos Rápidos</h2>
-          <div className="grid grid-cols-2 gap-4">
-            <button className="p-4 bg-gray-50 hover:bg-blue-50 hover:text-blue-600 rounded-xl border border-gray-100 transition-colors text-center">
-              <span className="block font-bold">Crear Slide</span>
-            </button>
-            <button className="p-4 bg-gray-50 hover:bg-pink-50 hover:text-pink-600 rounded-xl border border-gray-100 transition-colors text-center">
-              <span className="block font-bold">Subir Foto</span>
-            </button>
-            <button className="p-4 bg-gray-50 hover:bg-green-50 hover:text-green-600 rounded-xl border border-gray-100 transition-colors text-center">
-              <span className="block font-bold">Registrar Donación</span>
-            </button>
-            <button className="p-4 bg-gray-50 hover:bg-purple-50 hover:text-purple-600 rounded-xl border border-gray-100 transition-colors text-center">
-              <span className="block font-bold">Ver Mensajes</span>
-            </button>
-          </div>
-        </div>
-      </div>
+      
+      {/* Aquí se pueden añadir más widgets como gráficos o tablas recientes */}
     </div>
   );
 };

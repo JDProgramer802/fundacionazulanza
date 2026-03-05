@@ -8,18 +8,26 @@ import { useExport } from '../../hooks/useExport';
 import { supabase } from '../../lib/supabase';
 import type { Database } from '../../types/supabase';
 
+// Tipo para solicitudes de asesoría derivado de la BD
 type CounselingRequest = Database['public']['Tables']['counseling_requests']['Row'];
 
 const CounselingAdmin = () => {
+  // Estado para solicitudes y carga
   const [requests, setRequests] = useState<CounselingRequest[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, pending, completed
+  
+  // Filtro de estado ('all' por defecto)
+  const [filter, setFilter] = useState('all'); 
+
+  // Hook de exportación
   const { exportToPDF, exportToExcel } = useExport();
 
+  // Cargar solicitudes cuando cambia el filtro
   useEffect(() => {
     fetchRequests();
   }, [filter]);
 
+  // Obtener solicitudes desde Supabase
   const fetchRequests = async () => {
     try {
       setLoading(true);
@@ -28,6 +36,7 @@ const CounselingAdmin = () => {
         .select('*')
         .order('created_at', { ascending: false });
 
+      // Aplicar filtro si no es 'all'
       if (filter !== 'all') {
         query = query.eq('status', filter);
       }
@@ -42,6 +51,7 @@ const CounselingAdmin = () => {
     }
   };
 
+  // Cambiar el estado de una solicitud (Pendiente -> Completado/Cancelado)
   const handleStatusChange = async (id: number, status: 'pending' | 'completed' | 'cancelled') => {
     try {
       const { error } = await supabase
@@ -57,6 +67,7 @@ const CounselingAdmin = () => {
     }
   };
 
+  // Exportar lista actual a PDF
   const handleExportPDF = () => {
     exportToPDF(
       requests,
@@ -74,6 +85,7 @@ const CounselingAdmin = () => {
     );
   };
 
+  // Exportar lista actual a Excel
   const handleExportExcel = () => {
     exportToExcel(
       requests,
@@ -92,86 +104,74 @@ const CounselingAdmin = () => {
     );
   };
 
+  // Columnas de la tabla
   const columns = [
     {
       header: 'Solicitante',
       accessor: (row: CounselingRequest) => (
         <div>
-          <p className="font-bold text-gray-800">{row.name}</p>
-          <p className="text-xs text-gray-500">{row.email}</p>
-          <p className="text-xs text-gray-400">{row.phone}</p>
+          <p className="font-bold text-gray-800 dark:text-gray-200">{row.name}</p>
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            <p>{row.email}</p>
+            <p>{row.phone}</p>
+          </div>
         </div>
       )
     },
     {
-      header: 'Modalidad & Fecha',
+      header: 'Cita',
       accessor: (row: CounselingRequest) => (
         <div>
-          <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-            row.modality === 'Virtual' ? 'bg-blue-100 text-blue-600' : 'bg-purple-100 text-purple-600'
-          }`}>
-            {row.modality}
-          </span>
-          <p className="mt-1 text-xs text-gray-600">
-            {format(new Date(row.date), 'dd MMM yyyy', { locale: es })} - {row.time}
+          <p className="font-semibold text-gray-700 dark:text-gray-300">
+            {format(new Date(row.date), 'dd MMM yyyy', { locale: es })}
+          </p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">
+            {row.time} - {row.modality}
           </p>
         </div>
       )
     },
     {
-      header: 'Mensaje',
-      accessor: (row: CounselingRequest) => (
-        <div className="max-w-xs truncate text-gray-500 italic" title={row.message || ''}>
-          "{row.message || 'Sin mensaje'}"
-        </div>
-      )
-    },
-    {
       header: 'Estado',
-      accessor: (row: CounselingRequest) => (
-        <span className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold ${
-          row.status === 'completed' ? 'bg-green-100 text-green-600' :
-          row.status === 'cancelled' ? 'bg-red-100 text-red-600' :
-          'bg-yellow-100 text-yellow-600'
-        }`}>
-          {row.status === 'completed' ? <CheckCircle size={14} /> :
-           row.status === 'cancelled' ? <XCircle size={14} /> :
-           <Clock size={14} />}
-          {row.status === 'completed' ? 'Atendido' :
-           row.status === 'cancelled' ? 'Cancelado' :
-           'Pendiente'}
-        </span>
-      )
+      accessor: (row: CounselingRequest) => {
+        const colors = {
+          'Pendiente': 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400',
+          'Completado': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400',
+          'Cancelado': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+        };
+        const statusKey = row.status || 'Pendiente';
+        // @ts-ignore
+        const colorClass = colors[statusKey] || colors['Pendiente'];
+
+        return (
+          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${colorClass}`}>
+            {statusKey}
+          </span>
+        );
+      }
     },
     {
       header: 'Acciones',
       accessor: (row: CounselingRequest) => (
         <div className="flex gap-2">
-          {row.status !== 'completed' && (
+          {row.status !== 'Completado' && (
             <button
               onClick={() => handleStatusChange(row.id, 'completed')}
-              className="p-2 bg-green-50 text-green-600 rounded-lg hover:bg-green-100 transition-colors"
-              title="Marcar como Atendido"
+              className="p-1 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded"
+              title="Marcar como Completado"
             >
               <CheckCircle size={18} />
             </button>
           )}
-          {row.status === 'pending' && (
+          {row.status !== 'Cancelado' && (
             <button
               onClick={() => handleStatusChange(row.id, 'cancelled')}
-              className="p-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors"
-              title="Cancelar Solicitud"
+              className="p-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded"
+              title="Cancelar Cita"
             >
               <XCircle size={18} />
             </button>
           )}
-          <button
-            className="p-2 bg-gray-50 text-gray-600 rounded-lg hover:bg-gray-100 transition-colors"
-            title="Ver Detalles"
-            onClick={() => toast.info('Detalles completos próximamente')}
-          >
-            <Eye size={18} />
-          </button>
         </div>
       )
     }
@@ -179,51 +179,54 @@ const CounselingAdmin = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-800">Gestión de Asesorías</h1>
-          <p className="text-gray-500">Administra las solicitudes de apoyo psicológico.</p>
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Asesoría Psicológica</h1>
+          <p className="text-gray-500 dark:text-gray-400">Gestiona las solicitudes de citas y acompañamiento</p>
         </div>
-
-        <div className="flex gap-2 mb-4 md:mb-0">
+        
+        {/* Botones de Exportación */}
+        <div className="flex gap-2">
           <button
             onClick={handleExportPDF}
-            className="flex items-center gap-2 px-4 py-2 bg-red-50 text-red-600 border border-red-100 rounded-lg hover:bg-red-100 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm"
           >
-            <FileText size={18} />
-            PDF
+            <FileText className="w-4 h-4" /> PDF
           </button>
           <button
             onClick={handleExportExcel}
-            className="flex items-center gap-2 px-4 py-2 bg-green-50 text-green-600 border border-green-100 rounded-lg hover:bg-green-100 transition-colors"
+            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
           >
-            <Sheet size={18} />
-            Excel
+            <Sheet className="w-4 h-4" /> Excel
           </button>
-        </div>
-
-        <div className="flex bg-gray-100 p-1 rounded-lg">
-          {['all', 'pending', 'completed'].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-                filter === f ? 'bg-white shadow-sm text-primary-blue' : 'text-gray-500 hover:text-gray-700'
-              }`}
-            >
-              {f === 'all' ? 'Todas' : f === 'pending' ? 'Pendientes' : 'Atendidas'}
-            </button>
-          ))}
         </div>
       </div>
 
-      <AdminTable
-        title="Solicitudes Recientes"
-        data={requests}
-        columns={columns}
-        isLoading={loading}
-        onSearch={(q) => console.log('Buscar:', q)}
-      />
+      {/* Filtros */}
+      <div className="flex gap-2 overflow-x-auto pb-2">
+        {['all', 'Pendiente', 'Completado', 'Cancelado'].map((status) => (
+          <button
+            key={status}
+            onClick={() => setFilter(status)}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              filter === status
+                ? 'bg-blue-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
+            }`}
+          >
+            {status === 'all' ? 'Todos' : status}
+          </button>
+        ))}
+      </div>
+
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+        <AdminTable
+          data={requests}
+          columns={columns}
+          loading={loading}
+          emptyMessage="No hay solicitudes de asesoría registradas."
+        />
+      </div>
     </div>
   );
 };

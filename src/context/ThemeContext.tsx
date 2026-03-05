@@ -1,52 +1,78 @@
-import { createContext, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { createContext, useCallback, useEffect, useMemo, useState } from 'react';
 
-type Theme = 'light' | 'dark' | 'system';
-interface ThemeContextValue {
+// Tipos de tema soportados
+export type Theme = 'light' | 'dark' | 'system';
+
+// Interfaz del contexto
+export interface ThemeContextValue {
   theme: Theme;
   setTheme: (t: Theme) => void;
 }
 
-export const ThemeContext = createContext<ThemeContextValue>({ theme: 'system', setTheme: () => {} });
+// Contexto inicial por defecto
+export const ThemeContext = createContext<ThemeContextValue>({
+  theme: 'system',
+  setTheme: () => {}
+});
 
+// Proveedor de tema que maneja el cambio de clases CSS y persistencia en localStorage
 export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
+  // Cargar tema guardado o usar 'system' por defecto
   const [theme, setThemeState] = useState<Theme>(() => {
-    const saved = localStorage.getItem('theme');
-    return (saved as Theme) || 'system';
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme');
+      return (saved as Theme) || 'system';
+    }
+    return 'system';
   });
 
+  // Aplica las clases dark/light al elemento <html> y <body>
   const applyTheme = useCallback((t: Theme) => {
     const root = document.documentElement;
     const body = document.body;
-    root.classList.remove('dark');
-    body.classList.remove('dark');
-    if (t === 'dark') {
+    const isDark =
+      t === 'dark' ||
+      (t === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+
+    // Limpiar clases previas
+    root.classList.remove('light', 'dark');
+    body.classList.remove('light', 'dark');
+
+    // Aplicar nuevas clases
+    if (isDark) {
       root.classList.add('dark');
       body.classList.add('dark');
-    } else if (t === 'system') {
-      const prefersDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
-        root.classList.add('dark');
-        body.classList.add('dark');
-      }
+    } else {
+      root.classList.add('light');
+      body.classList.add('light');
     }
   }, []);
 
+  // Actualizar tema cuando cambia el estado
   useEffect(() => {
     applyTheme(theme);
     localStorage.setItem('theme', theme);
-    const listener = (e: MediaQueryListEvent) => {
-      const saved = localStorage.getItem('theme') as Theme;
-      if (saved === 'system') {
-        document.documentElement.classList.toggle('dark', e.matches);
-      }
-    };
-    const mq = window.matchMedia('(prefers-color-scheme: dark)');
-    mq.addEventListener('change', listener);
-    return () => mq.removeEventListener('change', listener);
   }, [theme, applyTheme]);
 
-  const setTheme = useCallback((t: Theme) => setThemeState(t), []);
+  // Escuchar cambios en la preferencia del sistema operativo si el tema es 'system'
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+
+    const handleChange = () => {
+      if (theme === 'system') {
+        applyTheme('system');
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, [theme, applyTheme]);
+
+  const setTheme = useCallback((t: Theme) => {
+    setThemeState(t);
+  }, []);
 
   const value = useMemo(() => ({ theme, setTheme }), [theme, setTheme]);
+
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
