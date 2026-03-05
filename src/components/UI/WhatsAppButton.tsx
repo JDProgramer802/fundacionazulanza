@@ -2,7 +2,7 @@ import { motion } from 'framer-motion';
 import { MessageCircle } from 'lucide-react';
 
 const WhatsAppButton = () => {
-  const phoneNumber = "573001234567"; // Reemplazar con el número real
+  const phoneNumber = "573227212546";
   const message = "Hola, me gustaría obtener más información sobre la Fundación Azulanza.";
   const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`;
 

@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
-import { CheckCircle, CreditCard, Gift, Heart, Shield } from 'lucide-react';
+import { CheckCircle, Copy, CreditCard, Gift, Heart, Shield } from 'lucide-react';
 import { useState } from 'react';
 import type { ChangeEvent } from 'react';
+import { toast } from 'react-toastify';
 
 const Donations = () => {
   const [selectedAmount, setSelectedAmount] = useState<number | 'custom' | null>(null);
@@ -133,6 +134,27 @@ const Donations = () => {
                     <p className="font-bold text-gray-800">$100.000</p>
                     <p className="text-sm text-gray-600">Ayuda a financiar una jornada de salud mental en una comunidad.</p>
                   </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
+              <h3 className="text-2xl font-bold text-gray-800 mb-4">Transferencia bancaria</h3>
+              <div className="space-y-3 text-gray-700">
+                <p><span className="font-bold">Banco:</span> Bancolombia</p>
+                <p><span className="font-bold">Tipo de cuenta:</span> Cuenta de ahorros</p>
+                <p><span className="font-bold">Titular:</span> Fundación Azulanza</p>
+                <p><span className="font-bold">NIT:</span> 901645631</p>
+                <div className="flex items-center gap-3">
+                  <span className="font-bold">Número de cuenta:</span>
+                  <span className="px-3 py-1 bg-gray-100 rounded-lg font-mono">47700009820</span>
+                  <button
+                    onClick={() => { navigator.clipboard.writeText('47700009820'); toast.success('Número de cuenta copiado'); }}
+                    className="inline-flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition-colors text-gray-700"
+                  >
+                    <Copy size={16} />
+                    Copiar
+                  </button>
                 </div>
               </div>
             </div>

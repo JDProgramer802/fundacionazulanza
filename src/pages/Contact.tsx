@@ -9,14 +9,14 @@ const Contact = () => {
       <section className="relative py-20 bg-gray-900 overflow-hidden">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1577563908411-5077b6dc7624?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center opacity-30"></div>
         <div className="container-custom relative z-10 text-center text-white">
-          <motion.h1 
+          <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-4xl md:text-6xl font-bold mb-6"
           >
             Contáctanos
           </motion.h1>
-          <motion.p 
+          <motion.p
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
@@ -30,7 +30,7 @@ const Contact = () => {
       <div className="container-custom py-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
           {/* Contact Info */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
@@ -38,7 +38,7 @@ const Contact = () => {
           >
             <div className="bg-blue-50 p-8 rounded-3xl border border-blue-100 h-full">
               <h3 className="text-2xl font-bold text-primary-blue mb-8">Información de Contacto</h3>
-              
+
               <div className="space-y-8">
                 <div className="flex items-start gap-4 group">
                   <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-primary-blue shadow-sm group-hover:scale-110 transition-transform">
@@ -46,7 +46,7 @@ const Contact = () => {
                   </div>
                   <div>
                     <h4 className="font-bold text-gray-800 mb-1">Ubicación</h4>
-                    <p className="text-gray-600">Calle 123 # 45-67, Barrio La Esperanza<br />Ciudad, País</p>
+                    <p className="text-gray-600">Cra. 42 #65 - 27 Local 2, Barrio Recreo<br />Barranquilla, Atlántico, Colombia</p>
                   </div>
                 </div>
 
@@ -97,12 +97,12 @@ const Contact = () => {
               transition={{ delay: 0.5 }}
               className="rounded-3xl overflow-hidden shadow-lg h-80 border border-gray-100"
             >
-              <iframe 
-                src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.923456789!2d-74.081750!3d4.609710!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMcszNiMzNi45Ik4gNzTCsDA0JzU0LjMiVw!5e0!3m2!1ses!2sco!4v1614123456789!5m2!1ses!2sco" 
-                width="100%" 
-                height="100%" 
-                style={{ border: 0 }} 
-                allowFullScreen={true} 
+              <iframe
+                src="https://www.google.com/maps?q=Cra.%2042%20%2365%20-%2027%20Local%202%20Barrio%20Recreo,%20Barranquilla,%20Atl%C3%A1ntico,%20Colombia&output=embed"
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                allowFullScreen={true}
                 loading="lazy"
                 title="Mapa de ubicación"
               ></iframe>
