@@ -198,6 +198,62 @@ ALTER TABLE testimonials ENABLE ROW LEVEL SECURITY;
 
 -- POLÍTICAS RLS
 
+-- Storage: crear bucket para galería (ejecutar una sola vez)
+-- Alternativa: crear bucket insertando en storage.buckets (compatible con todas las versiones)
+insert into storage.buckets (id, name, public)
+values ('gallery','gallery', true)
+on conflict (id) do nothing;
+
+-- Políticas para Storage Objects del bucket 'gallery'
+drop policy if exists "Public can view gallery images" on storage.objects;
+create policy "Public can view gallery images" on storage.objects
+for select
+using (bucket_id = 'gallery');
+
+drop policy if exists "Authenticated can upload to gallery" on storage.objects;
+create policy "Authenticated can upload to gallery" on storage.objects
+for insert
+to authenticated
+with check (bucket_id = 'gallery');
+
+drop policy if exists "Authenticated can update gallery images" on storage.objects;
+create policy "Authenticated can update gallery images" on storage.objects
+for update
+to authenticated
+using (bucket_id = 'gallery')
+with check (bucket_id = 'gallery');
+
+drop policy if exists "Authenticated can delete gallery images" on storage.objects;
+create policy "Authenticated can delete gallery images" on storage.objects
+for delete
+to authenticated
+using (bucket_id = 'gallery');
+
+-- Políticas adicionales para la tabla 'gallery'
+drop policy if exists "Public can view gallery" on gallery;
+create policy "Public can view gallery" on gallery
+for select
+using (true);
+
+drop policy if exists "Authenticated can insert gallery" on gallery;
+create policy "Authenticated can insert gallery" on gallery
+for insert
+to authenticated
+with check (true);
+
+drop policy if exists "Authenticated can update gallery" on gallery;
+create policy "Authenticated can update gallery" on gallery
+for update
+to authenticated
+using (true)
+with check (true);
+
+drop policy if exists "Authenticated can delete gallery" on gallery;
+create policy "Authenticated can delete gallery" on gallery
+for delete
+to authenticated
+using (true);
+
 -- Counseling Requests
 CREATE POLICY "Public can insert requests" ON counseling_requests FOR INSERT WITH CHECK (true);
 CREATE POLICY "Admins can view requests" ON counseling_requests FOR SELECT USING (true);
