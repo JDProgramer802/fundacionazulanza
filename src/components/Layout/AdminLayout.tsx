@@ -12,10 +12,12 @@ import {
   X
 } from 'lucide-react';
 import type { ReactNode } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import logo from '../../assets/images/logo-azulanza.png';
+import logoDefault from '../../assets/images/logo-azulanza.png';
 import { useAuth } from '../../hooks/useAuth';
+import { supabase } from '../../lib/supabase';
+import ThemeToggle from '../UI/ThemeToggle';
 
 interface AdminLayoutProps {
   children: ReactNode;
@@ -26,6 +28,15 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { logout, user } = useAuth();
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const loadLogo = async () => {
+      const { data } = await supabase.from('site_settings').select('value').eq('key', 'logo_url').limit(1);
+      if (data && data.length > 0) setLogoUrl(data[0].value as string);
+    };
+    loadLogo();
+  }, []);
 
   const handleLogout = async () => {
     await logout();
@@ -34,28 +45,30 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
 
   const menuItems = [
     { name: 'Dashboard', path: '/admin/dashboard', icon: LayoutDashboard },
+    { name: 'Páginas', path: '/admin/paginas', icon: Presentation },
     { name: 'Hero Slider', path: '/admin/hero', icon: Presentation },
     { name: 'Asesorías', path: '/admin/asesorias', icon: Users },
     { name: 'Voluntarios', path: '/admin/voluntarios', icon: User },
     { name: 'Usuarios', path: '/admin/usuarios', icon: Shield },
     { name: 'Galería', path: '/admin/galeria', icon: ImageIcon },
     { name: 'Donaciones', path: '/admin/donaciones', icon: Heart },
+    { name: 'Ajustes', path: '/admin/ajustes', icon: LayoutDashboard },
   ];
 
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <div className="min-h-screen bg-gray-50 flex font-sans">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex font-sans text-gray-800 dark:text-gray-100">
       {/* Sidebar Desktop */}
-      <aside className="hidden md:flex flex-col w-72 bg-white border-r border-gray-100 h-screen sticky top-0 shadow-sm z-20">
-        <div className="p-6 border-b border-gray-50 flex items-center justify-center">
+      <aside className="hidden md:flex flex-col w-72 bg-white dark:bg-gray-900 border-r border-gray-100 dark:border-gray-800 h-screen sticky top-0 shadow-sm z-20">
+        <div className="p-6 border-b border-gray-50 dark:border-gray-800 flex items-center justify-center">
           <Link to="/">
-            <img src={logo} alt="Fundación Azulanza" className="h-12 w-auto object-contain" />
+            <img src={logoUrl || logoDefault} alt="Fundación Azulanza" className="h-16 w-auto object-contain" />
           </Link>
         </div>
 
         <div className="p-4">
-          <div className="flex items-center gap-3 px-4 py-3 mb-6 bg-blue-50 rounded-xl">
+          <div className="flex items-center gap-3 px-4 py-3 mb-6 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
             <div className="w-10 h-10 rounded-full bg-primary-blue text-white flex items-center justify-center font-bold text-lg">
               {user?.user_metadata?.full_name?.charAt(0) || 'A'}
             </div>
@@ -73,13 +86,13 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
                   isActive(item.path)
                     ? 'bg-primary-blue text-white shadow-lg shadow-blue-200'
-                    : 'text-gray-500 hover:bg-gray-50 hover:text-primary-blue'
+                    : 'text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:text-primary-blue'
                 }`}
               >
                 <item.icon
                   size={20}
                   className={`transition-colors ${
-                    isActive(item.path) ? 'text-white' : 'text-gray-400 group-hover:text-primary-blue'
+                    isActive(item.path) ? 'text-white' : 'text-gray-400 dark:text-gray-500 group-hover:text-primary-blue'
                   }`}
                 />
                 <span className="font-medium">{item.name}</span>
@@ -106,9 +119,9 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
       </aside>
 
       {/* Mobile Header */}
-      <div className="md:hidden fixed top-0 w-full bg-white border-b border-gray-100 z-30 px-4 py-3 flex items-center justify-between shadow-sm">
+      <div className="md:hidden fixed top-0 w-full bg-white dark:bg-gray-900 border-b border-gray-100 dark:border-gray-800 z-30 px-4 py-3 flex items-center justify-between shadow-sm">
         <Link to="/">
-          <img src={logo} alt="Fundación Azulanza" className="h-10 w-auto object-contain" />
+          <img src={logoUrl || logoDefault} alt="Fundación Azulanza" className="h-14 w-auto object-contain" />
         </Link>
         <button
           onClick={() => setSidebarOpen(true)}
@@ -200,6 +213,7 @@ const AdminLayout = ({ children }: AdminLayoutProps) => {
           {children}
         </motion.div>
       </main>
+      <ThemeToggle />
     </div>
   );
 };

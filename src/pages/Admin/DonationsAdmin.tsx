@@ -46,9 +46,7 @@ const DonationsAdmin = () => {
       [
         { header: 'ID', key: 'id' },
         { header: 'Donante', key: 'donor_name' },
-        { header: 'Email', key: 'donor_email' },
         { header: 'Monto', key: 'amount' },
-        { header: 'Moneda', key: 'currency' },
         { header: 'Fecha', key: 'created_at' },
         { header: 'Estado', key: 'status' }
       ],
@@ -63,9 +61,7 @@ const DonationsAdmin = () => {
       [
         { header: 'ID', key: 'id' },
         { header: 'Donante', key: 'donor_name' },
-        { header: 'Email', key: 'donor_email' },
         { header: 'Monto', key: 'amount' },
-        { header: 'Moneda', key: 'currency' },
         { header: 'Fecha', key: 'created_at' },
         { header: 'Mensaje', key: 'message' },
         { header: 'Estado', key: 'status' }
@@ -80,7 +76,7 @@ const DonationsAdmin = () => {
       accessor: (row: Donation) => (
         <div>
           <p className="font-bold text-gray-800">{row.donor_name || 'Anónimo'}</p>
-          <p className="text-xs text-gray-500">{row.donor_email || '-'}</p>
+          <p className="text-xs text-gray-500">{row.payment_method || '-'}</p>
         </div>
       )
     },
@@ -88,7 +84,7 @@ const DonationsAdmin = () => {
       header: 'Monto',
       accessor: (row: Donation) => (
         <span className="font-bold text-green-600">
-          ${Number(row.amount).toLocaleString()} {row.currency}
+          ${Number(row.amount).toLocaleString()}
         </span>
       )
     },

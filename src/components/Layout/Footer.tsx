@@ -1,9 +1,19 @@
 import { Facebook, Instagram, Mail, MapPin, Phone, Twitter } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import logo from '../../assets/images/logo-azulanza.png';
+import logoDefault from '../../assets/images/logo-azulanza.png';
+import { supabase } from '../../lib/supabase';
 
 const Footer = () => {
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  useEffect(() => {
+    const loadLogo = async () => {
+      const { data } = await supabase.from('site_settings').select('value').eq('key', 'logo_url').limit(1);
+      if (data && data.length > 0) setLogoUrl(data[0].value as string);
+    };
+    loadLogo();
+  }, []);
   return (
     <footer className="bg-gray-900 text-white pt-16 pb-8">
       <div className="container-custom grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
@@ -11,9 +21,9 @@ const Footer = () => {
         <div>
           <div className="flex items-center gap-2 mb-4">
             <img
-              src={logo}
+              src={logoUrl || logoDefault}
               alt="Fundación Azulanza"
-              className="h-14 md:h-16 lg:h-20 w-auto object-contain bg-white rounded-lg p-1"
+              className="h-20 md:h-24 lg:h-28 w-auto object-contain bg-white rounded-lg p-2"
             />
           </div>
           <p className="text-gray-400 mb-6 leading-relaxed">

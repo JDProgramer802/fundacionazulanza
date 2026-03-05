@@ -2,11 +2,13 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { Menu, X } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import logo from '../../assets/images/logo-azulanza.png';
+import logoDefault from '../../assets/images/logo-azulanza.png';
+import { supabase } from '../../lib/supabase';
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const location = useLocation();
 
   useEffect(() => {
@@ -17,6 +19,13 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const loadLogo = async () => {
+      const { data } = await supabase.from('site_settings').select('value').eq('key', 'logo_url').limit(1);
+      if (data && data.length > 0) setLogoUrl(data[0].value as string);
+    };
+    loadLogo();
+  }, []);
   const navLinks = [
     { name: 'Inicio', path: '/' },
     { name: 'Sobre Nosotros', path: '/nosotros' },
@@ -37,7 +46,7 @@ const Navbar = () => {
       <div className="container-custom flex justify-between items-center">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 relative z-50" onClick={() => setIsOpen(false)}>
-          <img src={logo} alt="Fundación Azulanza" className="h-12 md:h-16 w-auto object-contain transition-all" />
+          <img src={logoUrl || logoDefault} alt="Fundación Azulanza" className="h-16 md:h-20 lg:h-24 w-auto object-contain transition-all" />
         </Link>
 
         {/* Desktop Menu */}
